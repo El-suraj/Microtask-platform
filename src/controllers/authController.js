@@ -1,6 +1,7 @@
-import { PrismaClient } from '../generated/prisma';
-import bcrypt from 'bcrypt';
-import { generateToken } from '../utils/jwt.js';
+import pkg from "@prisma/client";
+const { PrismaClient } = pkg;
+import bcrypt from "bcrypt";
+import { generateToken } from "../utils/jwt.js";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +11,8 @@ export const register = async (req, res) => {
     const { name, email, password, phone } = req.body;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) return res.status(400).json({ message: 'Email already exists' });
+    if (existingUser)
+      return res.status(400).json({ message: "Email already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -20,10 +22,13 @@ export const register = async (req, res) => {
 
     const token = generateToken(user);
 
-    res.status(201).json({ user: { id: user.id, name: user.name, email: user.email }, token });
+    res.status(201).json({
+      user: { id: user.id, name: user.name, email: user.email },
+      token,
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -33,16 +38,20 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!isMatch)
+      return res.status(400).json({ message: "Invalid credentials" });
 
     const token = generateToken(user);
 
-    res.json({ user: { id: user.id, name: user.name, email: user.email }, token });
+    res.json({
+      user: { id: user.id, name: user.name, email: user.email },
+      token,
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };

@@ -1,8 +1,8 @@
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
+  // remove or comment out any 'output' setting so the client is generated into node_modules/.prisma/client
 }
+
 
 datasource db {
   provider = "postgresql"
