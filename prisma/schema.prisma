@@ -1,8 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  // remove or comment out any 'output' setting so the client is generated into node_modules/.prisma/client
 }
-
 
 datasource db {
   provider = "postgresql"
@@ -10,56 +8,58 @@ datasource db {
 }
 
 model User {
-  id             Int       @id @default(autoincrement())
-  name           String
-  email          String    @unique
-  password       String
-  phone          String?
-  profileImage   String?
-  walletBalance  Float     @default(0)
-  role           String    @default("user") // user/admin
-  createdAt      DateTime  @default(now())
-  tasks          Task[]    @relation("TaskCreator")
-  submissions    Submission[]
-  withdrawals    Withdrawal[]
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String   @unique
+  password      String
+  phone         String?
+  profileImage  String?
+  walletBalance Float    @default(0)
+  role          String   @default("user")
+  createdAt     DateTime @default(now())
+
+  tasks       Task[]       @relation("UserTasks")
+  submissions Submission[]
+  withdrawals Withdrawal[]
 }
 
 model Task {
-  id             Int       @id @default(autoincrement())
-  title          String
-  description    String
-  amountPerTask  Float
-  totalSlots     Int
-  remainingSlots Int
-  proofType      String
-  createdBy      Int
-  status         String    @default("active") // active, completed, rejected
-  createdAt      DateTime  @default(now())
-  creator        User      @relation("TaskCreator", fields: [createdBy], references: [id])
-  submissions    Submission[]
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  reward      Float     @default(0)
+  deadline    DateTime?
+  userId      Int
+
+  createdAt DateTime @default(now())
+  status    String   @default("active")
+
+  user        User         @relation("UserTasks", fields: [userId], references: [id])
+  submissions Submission[]
 }
 
 model Submission {
-  id           Int       @id @default(autoincrement())
-  userId       Int
-  taskId       Int
-  proofImage   String?
-  proofText    String?
-  status       String    @default("pending") // pending, approved, rejected
-  reviewedBy   Int?
-  createdAt    DateTime  @default(now())
-  user         User      @relation(fields: [userId], references: [id])
-  task         Task      @relation(fields: [taskId], references: [id])
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  taskId     Int
+  proofImage String?
+  proofText  String?
+  status     String   @default("pending")
+  reviewedBy Int?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
 }
 
 model Withdrawal {
-  id           Int       @id @default(autoincrement())
-  userId       Int
-  amount       Float
-  bankName     String
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  amount        Float
+  bankName      String
   accountNumber String
-  status       String    @default("pending") // pending, approved, rejected
-  createdAt    DateTime  @default(now())
-  user         User      @relation(fields: [userId], references: [id])
-}
+  status        String   @default("pending")
+  createdAt     DateTime @default(now())
 
+  user User @relation(fields: [userId], references: [id])
+}
