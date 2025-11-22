@@ -30,7 +30,9 @@ model Task {
   reward      Float     @default(0)
   deadline    DateTime?
   userId      Int
-
+  totalSlots     Int
+  remainingSlots Int
+  proofType String
   createdAt DateTime @default(now())
   status    String   @default("active")
 

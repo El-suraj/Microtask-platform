@@ -1,14 +1,21 @@
 import { Router } from "express";
 import pkg from "@prisma/client";
 const { PrismaClient } = pkg;
-import { authMiddleware } from '../middleware/authMiddleware.js';
+import { authMiddleware, requireAdmin } from '../middleware/authMiddleware.js';
+import {
+  getAllTasks,
+  getTaskById,
+  updateTask,
+  deleteTask
+} from '../controllers/taskControllers.js';
+
 
 
 const prisma = new PrismaClient();
 const router = Router();
 
 // Create a new task
-router.post("/", authMiddleware, async (req, res) => {
+router.post("/", authMiddleware, requireAdmin, async (req, res) => {
   try {
     const {
       title,
@@ -47,5 +54,12 @@ router.post("/", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+// router.post('/', authMiddleware, createTask);//
+
+
+router.get('/', getAllTasks);
+router.get('/:id', getTaskById);
+router.put('/:id', authMiddleware, updateTask);
+router.delete('/:id', authMiddleware, deleteTask);
 
 export default router;
