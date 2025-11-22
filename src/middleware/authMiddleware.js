@@ -19,7 +19,7 @@ export const authMiddleware = (req, res, next) => {
 
 export const requireAdmin = (req, res, next) => {
   if (!req.user) return res.status(401).json({ message: "Not authenticated" });
-  if (req.user.role !== "ADMIN")
-    return res.status(403).json({ message: "Admin only" });
+  const role = String(req.user.role || "").toUpperCase();
+  if (role !== "ADMIN") return res.status(403).json({ message: "Admin only" });
   next();
 };
