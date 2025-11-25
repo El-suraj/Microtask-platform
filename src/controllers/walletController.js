@@ -15,7 +15,6 @@ export const getMyWallet = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 // POST /wallet/withdraw  (create withdrawal request)
 export const requestWithdrawal = async (req, res) => {
   try {
@@ -45,7 +44,6 @@ export const requestWithdrawal = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 // GET /wallet/withdrawals (admin view or user-specific)
 export const listWithdrawals = async (req, res) => {
   try {
@@ -67,7 +65,6 @@ export const listWithdrawals = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 // PUT /wallet/withdrawals/:id/approve  (admin)
 export const approveWithdrawal = async (req, res) => {
   try {
@@ -96,7 +93,7 @@ export const approveWithdrawal = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
+// PUT /wallet/withdrawals/:id/reject  (admin)
 export const rejectWithdrawal = async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Admin only wc2' });
@@ -117,7 +114,7 @@ export const rejectWithdrawal = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
+// GET /wallet/transactions (user)
 export const getTransactions = async (req, res) => {
   try {
     const transactions = await prisma.transaction.findMany({
@@ -130,7 +127,7 @@ export const getTransactions = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
+// POST /wallet/topup (user)
 export const topUpWallet = async (req, res) => {
   try {
     const { amount } = req.body;
@@ -144,8 +141,7 @@ export const topUpWallet = async (req, res) => {
       data: {
         userId: req.user.id,
         amount: Number(amount),
-        type: 'topup', 
-        description: 'Wallet top-up'
+        type: 'topup'
       }
     });
     res.json({ message: 'Wallet topped up', walletBalance: user.walletBalance });

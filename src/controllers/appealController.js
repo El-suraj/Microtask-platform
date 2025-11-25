@@ -229,3 +229,4 @@ export const adminRejectAppeal = async (req, res) => {
     });
   }
 };
+
