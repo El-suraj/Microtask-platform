@@ -22,6 +22,7 @@ model User {
   submissions  Submission[]
   withdrawals  Withdrawal[]
   transactions Transaction[]
+  appeals Appeal[]
 }
 
 model Task {
@@ -81,12 +82,16 @@ model Transaction {
 }
 
 model Appeal {
-  id            Int        @id @default(autoincrement())
+  id            Int         @id @default(autoincrement())
   submissionId  Int
+  submission    Submission  @relation(fields: [submissionId], references: [id])
+
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id])
+
   message       String
-  status        String     @default("pending") // pending | resolved
+  status        String      @default("pending")
   adminDecision String?
   adminNote     String?
-  createdAt     DateTime   @default(now())
-  Submission    Submission @relation(fields: [submissionId], references: [id])
+  createdAt     DateTime    @default(now())
 }

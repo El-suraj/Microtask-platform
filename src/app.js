@@ -6,11 +6,11 @@ import userRoutes from "./routes/userRoutes.js";
 import taskRoutes from "./routes/task.routes.js";
 import walletRoutes from "./routes/wallet.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
-import submissionRoutes from './routes/submission.routes.js';
+import submissionRoutes from "./routes/submission.routes.js";
+import appealRoutes from "./routes/appeal.routes.js";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import dashboardRoutes from "./routes/dashboard.routes.js";
-
 
 dotenv.config();
 
@@ -24,16 +24,15 @@ const authLimiter = rateLimit({
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
-app.use('/api/auth', authLimiter);
+app.use("/api/auth", authLimiter);
 
-
-
+app.use("/", appealRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/tasks", taskRoutes); // create/list/get/update/delete
 app.use("/wallet", walletRoutes); // wallet & withdrawals & transactions
 app.use("/admin", adminRoutes); // admin actions (approve submissions)
-app.use('/submissions', submissionRoutes); // create submissions
+app.use("/submit-task", submissionRoutes); // create submissions
 app.use("/api/dashboard", dashboardRoutes); // user dashboard
 app.get("/", (req, res) => res.send("Microtask Platform API is running!"));
 

@@ -1,16 +1,14 @@
 import { Router } from "express";
 import pkg from "@prisma/client";
 const { PrismaClient } = pkg;
-import { authMiddleware, requireAdmin } from '../middleware/authMiddleware.js';
+import { authMiddleware, requireAdmin } from "../middleware/authMiddleware.js";
 import {
   getAllTasks,
   getTaskById,
   updateTask,
   deleteTask,
-  createTask
-} from '../controllers/taskControllers.js';
-
-
+  createTask,
+} from "../controllers/taskControllers.js";
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -56,10 +54,10 @@ const router = Router();
 //   }
 // });
 
-router.post('/', authMiddleware, createTask); // Create a new task
-router.get('/', getAllTasks);
-router.get('/:id', getTaskById);
-router.put('/:id', authMiddleware, updateTask);
-router.delete('/:id', authMiddleware, deleteTask);
+router.post("/", authMiddleware, createTask); // Create a new task
+router.get("/", getAllTasks);
+router.get("/:id", getTaskById);
+router.put("/:id", authMiddleware, updateTask);
+router.delete("/:id", authMiddleware, deleteTask);
 
 export default router;

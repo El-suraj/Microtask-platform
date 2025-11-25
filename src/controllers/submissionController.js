@@ -6,7 +6,9 @@ export const createSubmission = async (req, res) => {
   try {
     const { taskId, proofImage } = req.body;
     if (!taskId || !proofImage) {
-      return res.status(400).json({ message: "taskId and proofImage are required" });
+      return res
+        .status(400)
+        .json({ message: "taskId and proofImage are required" });
     }
 
     const task = await prisma.task.findUnique({
@@ -36,24 +38,50 @@ export const createSubmission = async (req, res) => {
 
 export const submitAppeal = async (req, res) => {
   try {
-    const { submissionId, message } = req.body;
+    const { submissionId, userId, message } = req.body;
 
-    const submission = await prisma.submission.findUnique({ where: { id: submissionId } });
+    if (!submissionId || !userId || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "submissionId, userId and message are required"
+      });
+    }
 
-    if (!submission) return res.status(404).json({ message: "Submission not found" });
+    const existingAppeal = await prisma.appeal.findFirst({
+      where: {
+        submissionId: submissionId,
+        userId: userId
+      }
+    });
 
-    if (submission.userId !== req.user.id)
-      return res.status(403).json({ message: "You cannot appeal this submission" });
-
-    if (submission.status !== "rejected")
-      return res.status(400).json({ message: "Only rejected submissions can be appealed" });
+    if (existingAppeal) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already appealed this submission"
+      });
+    }
 
     const appeal = await prisma.appeal.create({
-      data: { submissionId, message }
+      data: {
+        submissionId,
+        userId,
+        message,
+        status: "pending"
+      }
     });
-    res.status(201).json({ message: "Appeal submitted", appeal });
-  } catch (err) {
-    console.error("submit Appeal error", err);
-    res.status(500).json({ message: "Server error" });
+
+    return res.json({
+      success: true,
+      message: "Appeal submitted successfully",
+      appeal
+    });
+
+  } catch (error) {
+    console.log("submitAppeal Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message
+    });
   }
 };
