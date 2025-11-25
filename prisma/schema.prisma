@@ -18,23 +18,25 @@ model User {
   role          String   @default("user")
   createdAt     DateTime @default(now())
 
-  tasks       Task[]       @relation("UserTasks")
-  submissions Submission[]
-  withdrawals Withdrawal[]
+  tasks        Task[]        @relation("UserTasks")
+  submissions  Submission[]
+  withdrawals  Withdrawal[]
+  transactions Transaction[]
 }
 
 model Task {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String?
-  reward      Float     @default(0)
-  deadline    DateTime?
-  userId      Int
+  id             Int       @id @default(autoincrement())
+  title          String
+  description    String?
+  reward         Float     @default(0)
+  deadline       DateTime?
+  userId         Int
   totalSlots     Int
   remainingSlots Int
-  proofType String
-  createdAt DateTime @default(now())
-  status    String   @default("active")
+  proofType      String
+  createdAt      DateTime  @default(now())
+  status         String    @default("active")
+  escrowAmount   Int       @default(0)
 
   user        User         @relation("UserTasks", fields: [userId], references: [id])
   submissions Submission[]
@@ -50,8 +52,9 @@ model Submission {
   reviewedBy Int?
   createdAt  DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
-  task Task @relation(fields: [taskId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  task    Task     @relation(fields: [taskId], references: [id])
+  appeals Appeal[]
 }
 
 model Withdrawal {
@@ -64,4 +67,26 @@ model Withdrawal {
   createdAt     DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  amount    Int
+  type      String // "topup" | "debit" | "credit"
+  status    String   @default("success")
+  createdAt DateTime @default(now())
+  taskId    Int?
+}
+
+model Appeal {
+  id            Int        @id @default(autoincrement())
+  submissionId  Int
+  message       String
+  status        String     @default("pending") // pending | resolved
+  adminDecision String?
+  adminNote     String?
+  createdAt     DateTime   @default(now())
+  Submission    Submission @relation(fields: [submissionId], references: [id])
 }

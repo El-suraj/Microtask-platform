@@ -33,3 +33,27 @@ export const createSubmission = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const submitAppeal = async (req, res) => {
+  try {
+    const { submissionId, message } = req.body;
+
+    const submission = await prisma.submission.findUnique({ where: { id: submissionId } });
+
+    if (!submission) return res.status(404).json({ message: "Submission not found" });
+
+    if (submission.userId !== req.user.id)
+      return res.status(403).json({ message: "You cannot appeal this submission" });
+
+    if (submission.status !== "rejected")
+      return res.status(400).json({ message: "Only rejected submissions can be appealed" });
+
+    const appeal = await prisma.appeal.create({
+      data: { submissionId, message }
+    });
+    res.status(201).json({ message: "Appeal submitted", appeal });
+  } catch (err) {
+    console.error("submit Appeal error", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

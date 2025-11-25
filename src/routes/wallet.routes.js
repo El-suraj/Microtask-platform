@@ -5,15 +5,18 @@ import {
   requestWithdrawal,
   listWithdrawals,
   approveWithdrawal,
-  rejectWithdrawal
+  rejectWithdrawal,
+  getTransactions,
+  topUpWallet
 } from '../controllers/walletController.js';
 
 const router = Router();
 
-router.get('/me', authMiddleware, getMyWallet);
 router.post('/withdraw', authMiddleware, requestWithdrawal);
+router.post("/topup", authMiddleware, topUpWallet); // Optional: Top-up wallet route
 router.get('/withdrawals', authMiddleware, listWithdrawals);
-
+router.get("/transactions", authMiddleware, getTransactions);
+router.get('/me', authMiddleware, getMyWallet);
 // Admin
 router.put('/withdrawals/:id/approve', authMiddleware, approveWithdrawal);
 router.put('/withdrawals/:id/reject', authMiddleware, rejectWithdrawal);

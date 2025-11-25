@@ -117,3 +117,40 @@ export const rejectWithdrawal = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+export const getTransactions = async (req, res) => {
+  try {
+    const transactions = await prisma.transaction.findMany({
+      where: { userId: req.user.id },
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.json(transactions);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const topUpWallet = async (req, res) => {
+  try {
+    const { amount } = req.body;
+    if (!amount || amount <= 0) return res.status(400).json({ message: 'Invalid amount' });
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { walletBalance: { increment: Number(amount) } }
+    });
+    // Log transaction
+    await prisma.transaction.create({
+      data: {
+        userId: req.user.id,
+        amount: Number(amount),
+        type: 'topup', 
+        description: 'Wallet top-up'
+      }
+    });
+    res.json({ message: 'Wallet topped up', walletBalance: user.walletBalance });
+  } catch (err) {
+    console.error('topUpWallet error', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

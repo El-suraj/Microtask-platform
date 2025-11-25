@@ -1,4 +1,5 @@
 import pkg from "@prisma/client";
+import { parse } from "dotenv";
 const { PrismaClient } = pkg;
 const prisma = new PrismaClient();
 
@@ -69,5 +70,126 @@ export const rejectSubmission = async (req, res) => {
   } catch (err) {
     console.error('rejectSubmission error', err);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.json({ users });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getAllTasks = async (req, res) => {
+  try {
+    const tasks = await prisma.task.findMany({
+      include: { user: true },
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.json({ tasks });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getAllSubmissions = async (req, res) => {
+  try {
+    const submissions = await prisma.submission.findMany({
+      include: { user: true, task: true },
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.json({ submissions });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getWithdrawals = async (req, res) => {
+  try {
+    const withdrawals = await prisma.withdrawal.findMany({
+      include: { user: true },
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.json({ withdrawals });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getAllAppeals = async (req, res) => {
+  try {
+    const appeals = await prisma.appeal.findMany({ 
+      include: { submission: true },
+      orderBy: { createdAt: "desc" }
+    }); 
+    res.json({ appeals });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+//Resolve an appeal by rejecting or approving the associated submission
+export const resolveAppeal = async (req, res) => {
+  try {
+    if (req.user.role !== 'ADMIN') return res.status(403).json({ message: 'Admin only ac3' });  
+    const appealId = Number(req.params.id);
+    const { action, adminMessage } = req.body; // 'approve' or 'reject'
+    const appeal = await prisma.appeal.findUnique({ where: { id: appealId }, include: { submission: true } });
+
+    if (!appeal) return res.status(404).json({ message: 'Appeal not found' });
+    const submission = await prisma.submission.findUnique({ 
+      where: { id: appeal.submissionId } 
+    });
+    const task = await prisma.task.findUnique({
+      where: { id: submission.taskId }
+    });
+    if (decision === 'approve') {
+      // Approve the submission
+      await prisma.user.update({
+        where: { id: submission.userId },
+        data: { balance: { increment: task.reward } }
+      });
+      //reduce escrow
+      await prisma.task.update({
+        where: { id: task.id },
+        data: { escrowAmount: { decrement: task.reward } }
+      });
+      //mark submission as approved
+      await prisma.submission.update({
+        where: { id: submission.id },
+        data: { status: 'approved', reviewedBy: req.user.id }
+      });
+    }else if (decision === 'reject') {
+      // Just mark submission as rejected
+      await prisma.submission.update({
+        where: { id: submission.id },
+        data: { status: 'rejected', reviewedBy: req.user.id }
+      });
+    } else {
+      return res.status(400).json({ message: 'Invalid action. Use "approve" or "reject".' });
+    }
+
+    //update appeal record
+    const updatedAppeal = await prisma.appeal.update({
+      where: { id: appealId },
+      data: {
+        status: "resolved",
+        adminDecision: decision,
+        adminMessage: adminMessage || null,
+        resolvedAt: new Date()
+    }
+    });
+    res.json({ message: 'Appeal resolved', action: updatedAppeal });
+  } catch (err) {
+    console.error('resolveAppeal error', err);
+    res.status(500).json({ message: 'Error resolving appeal', error: err.message });
   }
 };

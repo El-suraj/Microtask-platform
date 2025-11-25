@@ -1,8 +1,14 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import {
+  getAllUsers,
+  getAllTasks,
+  getAllSubmissions,
+  getAllAppeals,
+  getWithdrawals,
   approveSubmission,
   rejectSubmission,
+  resolveAppeal
 } from "../controllers/adminController.js";
 import pkg from "@prisma/client";
 const { PrismaClient } = pkg;
@@ -29,7 +35,18 @@ router.post("/create-admin", async (req, res) => {
     res.status(500).json({ message: "Failed to create admin" });
   }
 });
+router.post("/appeals/:id/resolve", authMiddleware, resolveAppeal);
+// USERS
+router.get("/users", getAllUsers);
 
+// TASKS
+router.get("/tasks", getAllTasks);
+
+// SUBMISSIONS
+router.get("/submissions", getAllSubmissions);
+router.get("/appeals", authMiddleware, getAllAppeals);
+// WITHDRAWALS
+router.get("/withdrawals", getWithdrawals);
 router.put("/submission/:id/approve", authMiddleware, approveSubmission);
 router.put("/submission/:id/reject", authMiddleware, rejectSubmission);
 

@@ -9,6 +9,7 @@ import adminRoutes from "./routes/admin.routes.js";
 import submissionRoutes from './routes/submission.routes.js';
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 
 
 dotenv.config();
@@ -16,7 +17,7 @@ dotenv.config();
 const app = express();
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 0, // limit each IP to 100 requests per windowMs
+  max: 50, // limit each IP to 100 requests per windowMs
   message:
     "Too many requests from this IP, please try again after a 15 minute break",
 });
@@ -30,10 +31,10 @@ app.use('/api/auth', authLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/tasks", taskRoutes); // create/list/get/update/delete
-app.use("/wallet", walletRoutes); // wallet & withdrawals
+app.use("/wallet", walletRoutes); // wallet & withdrawals & transactions
 app.use("/admin", adminRoutes); // admin actions (approve submissions)
 app.use('/submissions', submissionRoutes); // create submissions
-
+app.use("/api/dashboard", dashboardRoutes); // user dashboard
 app.get("/", (req, res) => res.send("Microtask Platform API is running!"));
 
 const PORT = process.env.PORT || 5000;
