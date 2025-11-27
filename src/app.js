@@ -22,7 +22,7 @@ const authLimiter = rateLimit({
     "Too many requests from this IP, please try again after a 15 minute break",
 });
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 app.use("/api/auth", authLimiter);
 
