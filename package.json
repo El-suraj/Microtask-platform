@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js" 
+   "dev": "nodemon src/app.js",
+    "postinstall": "npx prisma generate" 
   },
   "keywords": [],
   "author": "",
@@ -22,8 +23,7 @@
     "express-validator": "^7.3.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^2.0.2",
-    "mysql2": "^3.15.3"
+    "multer": "^2.0.2"
     
   },
   "devDependencies": {
