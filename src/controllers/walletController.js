@@ -256,11 +256,9 @@ export const requestWithdrawal = async (req, res) => {
     } else {
       // if no bankDetailId provided, accept bankName/accountNumber in body
       if (!bankNameToUse || !accountNumberToUse) {
-        return res
-          .status(400)
-          .json({
-            message: "Provide bankDetailId or bankName & accountNumber",
-          });
+        return res.status(400).json({
+          message: "Provide bankDetailId or bankName & accountNumber",
+        });
       }
     }
 
@@ -430,6 +428,83 @@ export const rejectWithdrawal = async (req, res) => {
     res.json({ message: "Withdrawal rejected" });
   } catch (error) {
     console.error("rejectWithdrawal error", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+/**
+ * GET /wallet/transactions
+ * - If admin: return all transactions
+ * - Else: return user's transactions
+ */
+export const getTransactions = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const role = req.user?.role;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+
+    let where = {};
+    if (String(role).toLowerCase() !== "admin") {
+      where = { userId: Number(userId) };
+    }
+
+    const transactions = await prisma.transaction.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json({ transactions });
+  } catch (error) {
+    console.error("getTransactions error", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+/**
+ * POST /wallet/topup
+ * Body: { amount }
+ * NOTE: In production this should integrate with a payment provider and only credit after successful payment.
+ */
+export const topUpWallet = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+
+    const { amount } = req.body;
+    const parsed = Number(amount);
+    if (!parsed || parsed <= 0)
+      return res.status(400).json({ message: "Invalid amount" });
+
+    // In dev/demo we directly credit the wallet. In prod, perform this after payment confirmation.
+    const [updatedUser, transaction] = await prisma.$transaction([
+      prisma.user.update({
+        where: { id: Number(userId) },
+        data: { walletBalance: { increment: parsed } },
+      }),
+      prisma.transaction.create({
+        data: {
+          userId: Number(userId),
+          amount: parsed,
+          type: "credit",
+          status: "success",
+          taskId: null,
+        },
+      }),
+    ]);
+
+    res.json({
+      message: "Wallet topped up",
+      walletBalance: updatedUser.walletBalance,
+      transaction: {
+        id: transaction.id,
+        amount: transaction.amount,
+        type: transaction.type,
+        status: transaction.status,
+        createdAt: transaction.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error("topUpWallet error", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

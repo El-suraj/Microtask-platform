@@ -23,3 +23,6 @@ export const requireAdmin = (req, res, next) => {
   if (role !== "ADMIN") return res.status(403).json({ message: "Admin only" });
   next();
 };
+
+// Export alias expected by routes
+export const authenticateToken = authMiddleware;

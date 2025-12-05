@@ -1,8 +1,15 @@
 import express from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import {
-  getMyWallet,
-  addBankDetail,
+ 
+  myTasks,
+  mySubmissions,
+  myEarnings,
+  dashboardOverview,
+} from "../controllers/dashboardController.js";
+import { 
+   getMyWallet,
+   addBankDetail,
   listBankDetails,
   setPrimaryBankDetail,
   updateBankDetail,
@@ -10,12 +17,7 @@ import {
   requestWithdrawal,
   listWithdrawals,
   approveWithdrawal,
-  rejectWithdrawal,
-  myTasks,
-  mySubmissions,
-  myEarnings,
-  dashboardOverview,
-} from "../controllers/walletController.js";
+  rejectWithdrawal} from "../controllers/walletController.js";
 
 const router = express.Router();
 
