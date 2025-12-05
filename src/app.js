@@ -21,19 +21,20 @@ const authLimiter = rateLimit({
   message:
     "Too many requests from this IP, please try again after a 15 minute break",
 });
+
 app.use(helmet());
-app.use(cors({ }));
+app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json());
 app.use("/api/auth", authLimiter);
 
+// Routes
 app.use("/", appealRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
-app.use("/tasks", taskRoutes); // create/list/get/update/delete
-app.use("/wallet", walletRoutes); // wallet & withdrawals & transactions
-app.use("/admin", adminRoutes); // admin actions (approve submissions)
-app.use("/submit-task", submissionRoutes); // create submissions
-app.use("/api/dashboard", dashboardRoutes); // user dashboard
+app.use("/tasks", taskRoutes);
+app.use("/wallet", walletRoutes); // NEW
+app.use("/dashboard", dashboardRoutes); // NEW
+
 app.get("/", (req, res) => res.send("Microtask Platform API is running!"));
 
 const PORT = process.env.PORT || 5000;

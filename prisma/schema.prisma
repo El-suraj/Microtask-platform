@@ -23,6 +23,8 @@ model User {
   withdrawals  Withdrawal[]
   transactions Transaction[]
   appeals Appeal[]
+
+  bankDetails BankDetail[]  
 }
 
 model Task {
@@ -94,4 +96,19 @@ model Appeal {
   adminDecision String?
   adminNote     String?
   createdAt     DateTime    @default(now())
+}
+ model BankDetail{
+   id               Int      @id @default(autoincrement())
+  userId           Int
+  bankName         String
+  accountNumber    String
+  accountHolder    String?
+  bankCode         String?   // optional bank code (if applicable)
+  isPrimary        Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@unique([userId, accountNumber]) // prevent duplicate account for same user
 }
