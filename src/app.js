@@ -28,9 +28,11 @@ app.use(express.json());
 app.use("/api/auth", authLimiter);
 
 // Routes
+app.use("/admin", adminRoutes);
+app.use("/submissions", submissionRoutes);
 app.use("/", appealRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/user", userRoutes);
+app.use("/auth", authRoutes);
+app.use("/user", userRoutes);
 app.use("/tasks", taskRoutes);
 app.use("/wallet", walletRoutes); // NEW
 app.use("/dashboard", dashboardRoutes); // NEW

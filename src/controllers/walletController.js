@@ -28,7 +28,10 @@ export const getMyWallet = async (req, res) => {
 
     const bankDetails = await prisma.bankDetail.findMany({
       where: { userId: Number(userId) },
-      orderBy: { isPrimary: "desc", createdAt: "desc" },
+      orderBy: [
+        { isPrimary: "desc" },
+        { createdAt: "desc" }
+      ],
     });
 
     const masked = bankDetails.map((b) => ({

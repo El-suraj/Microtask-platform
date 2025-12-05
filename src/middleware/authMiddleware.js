@@ -1,7 +1,12 @@
 import jwt from "jsonwebtoken";
 
 export const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  // dev helper: allow token via query for local debugging
+  const devToken = process.env.NODE_ENV === "development" ? req.query?.token : undefined;
+  const authHeader = req.headers.authorization || (devToken ? `Bearer ${devToken}` : undefined);
+
+  // Log incoming auth header for debugging
+  // console.debug("authMiddleware authHeader:", authHeader);
 
   if (!authHeader)
     return res.status(401).json({ message: "No token provided" });
