@@ -138,6 +138,7 @@ export const listBankDetails = async (req, res) => {
 /**
  * PUT /wallet/bank/:id/primary - set bank detail as primary
  */
+
 export const setPrimaryBankDetail = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -444,24 +445,60 @@ export const getTransactions = async (req, res) => {
   try {
     const userId = req.user?.id;
     const role = req.user?.role;
-    if (!userId) return res.status(401).json({ message: "Not authenticated" });
 
-    let where = {};
-    if (String(role).toLowerCase() !== "admin") {
-      where = { userId: Number(userId) };
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
     }
 
-    const transactions = await prisma.transaction.findMany({
+    const isAdmin = String(role).toLowerCase() === "admin";
+
+    // Admin sees all — users see only their own
+    const where = isAdmin ? {} : { userId: Number(userId) };
+
+    // 1. Fetch deposit/topup transactions
+    const deposits = await prisma.transaction.findMany({
       where,
       orderBy: { createdAt: "desc" },
     });
 
-    res.json({ transactions });
+    const formattedDeposits = deposits.map((tx) => ({
+      id: tx.id,
+      type: tx.type?.toUpperCase() || "DEPOSIT",
+      amount: Number(tx.amount),
+      method: tx.description || "Deposit",
+      status: "COMPLETED",
+      date: tx.createdAt,
+    }));
+
+    // 2. Fetch withdrawals
+    const withdrawals = await prisma.withdrawal.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
+
+    const formattedWithdrawals = withdrawals.map((w) => ({
+      id: w.id,
+      type: "WITHDRAWAL",
+      amount: -Math.abs(w.amount),
+      method: w.bankName || "Withdrawal",
+      status: w.status?.toUpperCase() || "PENDING",
+      date: w.createdAt,
+    }));
+
+    // 3. Merge everything
+    let all = [...formattedDeposits, ...formattedWithdrawals];
+
+    // 4. Sort by date
+    all.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    return res.json({ transactions: all });
+
   } catch (error) {
     console.error("getTransactions error", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 /**
  * POST /wallet/topup
