@@ -1,7 +1,7 @@
 import pkg from "@prisma/client";
 const { PrismaClient } = pkg;
 import crypto from "crypto";
-import sendEmail from "../utils/sendEmail.js";
+// import sendEmail from "../utils/sendEmail.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/jwt.js";
 
