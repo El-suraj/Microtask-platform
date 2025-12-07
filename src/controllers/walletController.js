@@ -28,10 +28,7 @@ export const getMyWallet = async (req, res) => {
 
     const bankDetails = await prisma.bankDetail.findMany({
       where: { userId: Number(userId) },
-      orderBy: [
-        { isPrimary: "desc" },
-        { createdAt: "desc" }
-      ],
+      orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
     });
 
     const masked = bankDetails.map((b) => ({
@@ -492,59 +489,107 @@ export const getTransactions = async (req, res) => {
     all.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return res.json({ transactions: all });
-
   } catch (error) {
     console.error("getTransactions error", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-
 /**
  * POST /wallet/topup
  * Body: { amount }
- * NOTE: In production this should integrate with a payment provider and only credit after successful payment.
+ * NOTE: In production this should integrate with a payment provider and only  after successful payment.
  */
 export const topUpWallet = async (req, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: "Not authenticated" });
-
     const { amount } = req.body;
-    const parsed = Number(amount);
-    if (!parsed || parsed <= 0)
-      return res.status(400).json({ message: "Invalid amount" });
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    if (!amount || amount <= 0) return res.status(400).json({ message: "Amount required" }); 
 
     // In dev/demo we directly credit the wallet. In prod, perform this after payment confirmation.
-    const [updatedUser, transaction] = await prisma.$transaction([
-      prisma.user.update({
-        where: { id: Number(userId) },
-        data: { walletBalance: { increment: parsed } },
-      }),
-      prisma.transaction.create({
+    const  transaction = await prisma.transaction.create({
         data: {
           userId: Number(userId),
-          amount: parsed,
-          type: "credit",
-          status: "success",
-          taskId: null,
+          amount: Number(amount),
+          type: "Deposit",
+          status: "pending",
+          method: method || "Wallet Top-up",
         },
-      }),
-    ]);
+      });
 
     res.json({
-      message: "Wallet topped up",
-      walletBalance: updatedUser.walletBalance,
-      transaction: {
-        id: transaction.id,
-        amount: transaction.amount,
-        type: transaction.type,
-        status: transaction.status,
-        createdAt: transaction.createdAt,
-      },
+      message: "Deposit request submitted - wallet will be credited after confirmation",
+      transaction,
     });
   } catch (error) {
     console.error("topUpWallet error", error);
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+/**admin approve top-up
+ * PUT /wallet/topup/:id/approve  (admin)
+ * - credit user's walletBalance and update transaction record on approve
+ */
+export const approveDeposit = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deposit = await prisma.transaction.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!deposit || deposit.type !== "deposit")
+      return res.status(404).json({ message: "Deposit not found" });
+
+    if (deposit.status !== "pending")
+      return res.status(400).json({ message: "Already processed" });
+
+    // update status
+    await prisma.transaction.update({
+      where: { id: Number(id) },
+      data: { status: "completed" },
+    });
+
+    // then add amount to wallet
+    const updatedUser = await prisma.user.update({
+      where: { id: deposit.userId },
+      data: {
+        walletBalance: {
+          increment: deposit.amount,
+        },
+      },
+    });
+
+    res.json({ message: "Deposit approved", walletBalance: updatedUser.walletBalance });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const rejectDeposit = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deposit = await prisma.transaction.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!deposit || deposit.type !== "deposit")
+      return res.status(404).json({ message: "Deposit not found" });
+
+    if (deposit.status !== "pending")
+      return res.status(400).json({ message: "Already processed" });
+
+    // reject
+    await prisma.transaction.update({
+      where: { id: Number(id) },
+      data: { status: "rejected" },
+    });
+
+    res.json({ message: "Deposit rejected" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };

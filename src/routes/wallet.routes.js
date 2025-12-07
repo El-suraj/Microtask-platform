@@ -20,5 +20,7 @@ router.get('/me', authMiddleware, getMyWallet);
 // Admin
 router.put('/withdrawals/:id/approve', authMiddleware, approveWithdrawal);
 router.put('/withdrawals/:id/reject', authMiddleware, rejectWithdrawal);
+router.put('/deposits/:id/approve', authMiddleware, isAdmin, approveDeposit);
+router.put('/deposits/:id/reject', authMiddleware, isAdmin, rejectDeposit);
 
 export default router;
