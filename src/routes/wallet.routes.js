@@ -10,7 +10,7 @@ import {
   topUpWallet,
   approveDeposit,
   rejectDeposit,
-  isAdmin
+
 } from '../controllers/walletController.js';
 
 const router = Router();
