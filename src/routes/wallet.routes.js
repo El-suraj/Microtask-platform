@@ -21,9 +21,9 @@ router.get('/withdrawals', authMiddleware, listWithdrawals);
 router.get("/transactions", authMiddleware, getTransactions);
 router.get('/me', authMiddleware, getMyWallet);
 // Admin
-router.put('/withdrawals/:id/approve', authMiddleware, isAdmin, approveWithdrawal);
-router.put('/withdrawals/:id/reject', authMiddleware, isAdmin, rejectWithdrawal);
-router.put('/deposits/:id/approve', authMiddleware, isAdmin, approveDeposit);
-router.put('/deposits/:id/reject', authMiddleware, isAdmin, rejectDeposit);
+router.put('/withdrawals/:id/approve', authMiddleware, approveWithdrawal);
+router.put('/withdrawals/:id/reject', authMiddleware, rejectWithdrawal);
+router.put('/deposits/:id/approve', authMiddleware, approveDeposit);
+router.put('/deposits/:id/reject', authMiddleware, rejectDeposit);
 
 export default router;
