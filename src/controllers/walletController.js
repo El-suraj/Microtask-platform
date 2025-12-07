@@ -514,8 +514,6 @@ export const topUpWallet = async (req, res) => {
           amount: Number(amount),
           type: "Deposit",
           status: "pending",
-          method: method || "Wallet Top-up",
-        },
       });
 
     res.json({
