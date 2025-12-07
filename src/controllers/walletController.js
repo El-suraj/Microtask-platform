@@ -503,23 +503,30 @@ export const getTransactions = async (req, res) => {
 export const topUpWallet = async (req, res) => {
   try {
     const userId = req.user?.id;
+    if (!userId)
+      return res.status(401).json({ message: "Not authenticated" });
+
     const { amount } = req.body;
-    if (!userId) return res.status(401).json({ message: "Not authenticated" });
-    if (!amount || amount <= 0) return res.status(400).json({ message: "Amount required" }); 
 
-    // In dev/demo we directly credit the wallet. In prod, perform this after payment confirmation.
-    const  transaction = await prisma.transaction.create({
-        data: {
-          userId: Number(userId),
-          amount: Number(amount),
-          type: "Deposit",
-          status: "pending",
-      });
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ message: "Invalid amount" });
+    }
 
-    res.json({
-      message: "Deposit request submitted - wallet will be credited after confirmation",
-      transaction,
+    // Create a pending transaction (admin must approve)
+    const tx = await prisma.transaction.create({
+      data: {
+        userId: Number(userId),
+        amount: Number(amount),
+        type: "topup",
+        status: "pending", // IMPORTANT
+      },
     });
+
+    return res.json({
+      message: "Top-up request submitted — awaiting admin approval",
+      transaction: tx,
+    });
+
   } catch (error) {
     console.error("topUpWallet error", error);
     res.status(500).json({ message: "Server error", error: error.message });
