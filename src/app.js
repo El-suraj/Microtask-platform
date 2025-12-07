@@ -41,4 +41,4 @@ app.get("/", (req, res) => res.send("Microtask Platform API is running!"));
 
 const PORT = process.env.PORT || 5000;
 
-app.liste n(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
