@@ -7,8 +7,8 @@ import {
   dashboardOverview,
 } from "../controllers/dashboardController.js";
 import { 
-   getMyWallet,
-   addBankDetail,
+  getMyWallet,
+  addBankDetail,
   listBankDetails,
   setPrimaryBankDetail,
   updateBankDetail,
@@ -16,7 +16,8 @@ import {
   requestWithdrawal,
   listWithdrawals,
   approveWithdrawal,
-  rejectWithdrawal} from "../controllers/walletController.js";
+  rejectWithdrawal
+} from "../controllers/walletController.js";
 
 const router = express.Router();
 
@@ -27,12 +28,11 @@ router.use(authenticateToken);
 router.get("/me", getMyWallet);
 
 // Bank Details CRUD
-router.post("/bank", addBankDetail);
-router.get("/bank", listBankDetails);
-router.put("/bank/:id", updateBankDetail);
-router.put("/bank/:id/primary", setPrimaryBankDetail);
-router.delete("/bank/:id", deleteBankDetail);
-
+router.post("/addbankdetails", addBankDetail);
+router.get("/listbankdetails", listBankDetails);
+router.put("/updatebankdetails/:id", updateBankDetail);
+router.put("/updatebankdetails/:id/primary", setPrimaryBankDetail);
+router.delete("/deletebankdetails/:id", deleteBankDetail);
 // Withdrawals
 router.post("/withdraw", requestWithdrawal);
 router.get("/withdrawals", listWithdrawals);

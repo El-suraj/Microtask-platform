@@ -21,6 +21,11 @@ model User {
   resetToken        String?  
   resetTokenExpiry  DateTime?
 
+  emailOtp          String?
+  emailOtpExpiry    DateTime?
+  isVerified        Boolean   @default(false)
+  kycLevel          Int       @default(0)
+
   tasks        Task[]        @relation("UserTasks")
   submissions  Submission[]
   withdrawals  Withdrawal[]

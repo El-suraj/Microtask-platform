@@ -1,7 +1,7 @@
 import express from 'express';
 import { register, login } from '../controllers/authController.js';
 import { registerValidation, loginValidation, validate } from '../validators/authvalidators.js';
-import { forgotPassword, resetPassword } from "../controllers/authController.js";
+import { forgotPassword, resetPassword, verifyEmailOtp } from "../controllers/authController.js";
 
 
 
@@ -12,5 +12,7 @@ router.post('/register', registerValidation, validate, register);
 router.post('/login', loginValidation, validate, login);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
+router.post("/verify-email", verifyEmailOtp);
+
 
 export default router;

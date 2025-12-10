@@ -111,11 +111,13 @@ export const listBankDetails = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Not authenticated" });
 
-    const bankDetails = await prisma.bankDetail.findMany({
-      where: { userId: Number(userId) },
-      orderBy: { isPrimary: "desc", createdAt: "desc" },
-    });
-
+   const bankDetails = await prisma.bankDetail.findMany({
+  where: { userId: Number(userId) },
+  orderBy: [
+    { isPrimary: "desc" },
+    { createdAt: "desc" }
+  ],
+});
     const masked = bankDetails.map((b) => ({
       id: b.id,
       bankName: b.bankName,
